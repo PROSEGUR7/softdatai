@@ -30,24 +30,24 @@ const AboutCard: React.FC<{
 const About: React.FC = () => {
   const features = [
     {
-      icon: <CloudCog size={24} />,
+      icon: <CloudCog size={24} />, 
       title: "Migración a la nube",
-      description: "Facilitamos la transición segura y eficiente de tus sistemas a plataformas cloud como Azure y Google Cloud"
+      description: "Migración segura y eficiente a la nube (Azure, Google Cloud) para empresas que buscan escalabilidad, seguridad y reducción de costos."
     },
     {
-      icon: <Code size={24} />,
-      title: "Desarrollo a medida",
-      description: "Creamos software personalizado que se adapta perfectamente a los procesos únicos de tu empresa"
+      icon: <Code size={24} />, 
+      title: "Desarrollo de software a medida",
+      description: "Desarrollo de software personalizado, adaptado a los procesos únicos de tu empresa, con tecnologías modernas y seguras."
     },
     {
-      icon: <Database size={24} />,
-      title: "Gestión de datos",
-      description: "Optimizamos tus bases de datos para mejorar el rendimiento y proteger tu información más valiosa"
+      icon: <Database size={24} />, 
+      title: "Gestión y análisis de datos",
+      description: "Optimización de bases de datos, análisis de datos empresariales y dashboards para la toma de decisiones basada en datos."
     },
     {
-      icon: <BrainCircuit size={24} />,
-      title: "Soluciones con IA",
-      description: "Implementamos inteligencia artificial para automatizar procesos y obtener insights valiosos de tus datos"
+      icon: <BrainCircuit size={24} />, 
+      title: "Soluciones de inteligencia artificial",
+      description: "Implementación de IA y machine learning para automatización, predicción y obtención de insights valiosos."
     }
   ];
 

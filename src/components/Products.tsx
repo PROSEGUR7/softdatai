@@ -3,9 +3,7 @@ import WompiPayment from './WompiPayment';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-// Register ScrollTrigger plugin
-gsap.registerPlugin(ScrollTrigger);
-
+// ProductCard debe estar definido antes de Products
 interface ProductCardProps {
   title: string;
   description: string;
@@ -25,111 +23,38 @@ const ProductCard: React.FC<ProductCardProps> = ({
   accentColor,
   delay
 }) => {
-  const cardRef = useRef<HTMLDivElement>(null);
-  
-  useEffect(() => {
-    const card = cardRef.current;
-    
-    if (card) {
-      gsap.fromTo(
-        card,
-        { 
-          y: 50, 
-          opacity: 0 
-        },
-        { 
-          y: 0, 
-          opacity: 1, 
-          duration: 0.8, 
-          delay: delay,
-          scrollTrigger: {
-            trigger: card,
-            start: "top bottom-=100",
-            toggleActions: "play none none none"
-          }
-        }
-      );
-    }
-  }, [delay]);
-
-  // Use safe approach for dynamic Tailwind classes
-  const getCardClasses = () => {
-    const baseClasses = "relative overflow-hidden rounded-2xl bg-background-light/80 backdrop-blur-md border border-neutral-700/50 transition-all duration-300 group";
-    
-    // Add appropriate border hover class based on accentColor
-    if (accentColor === "primary") return `${baseClasses} hover:border-primary/50`;
-    if (accentColor === "secondary") return `${baseClasses} hover:border-secondary/50`;
-    if (accentColor === "accent") return `${baseClasses} hover:border-accent/50`;
-    
-    return baseClasses;
-  };
-  
-  // Get gradient hover classes based on accentColor
-  const getGradientClasses = () => {
-    const baseClasses = "absolute -inset-0.5 bg-gradient-to-br from-transparent via-transparent to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-all duration-500";
-    
-    if (accentColor === "primary") return `${baseClasses} group-hover:from-primary/20`;
-    if (accentColor === "secondary") return `${baseClasses} group-hover:from-secondary/20`;
-    if (accentColor === "accent") return `${baseClasses} group-hover:from-accent/20`;
-    
-    return baseClasses;
-  };
-  
-  // Get icon color classes based on accentColor
-  const getIconClasses = () => {
-    if (accentColor === "primary") return "text-primary";
-    if (accentColor === "secondary") return "text-secondary";
-    if (accentColor === "accent") return "text-accent";
-    return "text-white";
-  };
-
   return (
-    <div 
-      ref={cardRef}
-      className={getCardClasses()}
-    >
-      <div className="absolute inset-0 bg-gradient-to-br from-background-light via-background-light to-transparent opacity-80"></div>
-      <div className={getGradientClasses()}></div>
-      
-      <div className="relative h-full p-5 sm:p-6 flex flex-col">
-        <div className="w-16 h-16 flex items-center justify-center mb-4">
-          <div className={getIconClasses()}>{icon}</div>
+    <div>
+      <h3 className="text-xl sm:text-2xl font-display font-bold mb-2">{title}</h3>
+      <p className="text-neutral-300 text-sm mb-4">{description}</p>
+      <div className="mt-auto">
+        <div className="mb-4">
+          <h4 className="text-sm font-medium text-neutral-200 mb-2">Características</h4>
+          <ul className="space-y-2">
+            {features.map((feature, i) => {
+              // Get check mark color based on accentColor
+              const getCheckClasses = () => {
+                if (accentColor === "primary") return "text-primary mr-2";
+                if (accentColor === "secondary") return "text-secondary mr-2";
+                if (accentColor === "accent") return "text-accent mr-2";
+                return "text-white mr-2";
+              };
+              return (
+                <li key={i} className="flex items-start">
+                  <span className={getCheckClasses()}>✓</span>
+                  <span className="text-neutral-300 text-xs sm:text-sm">{feature}</span>
+                </li>
+              );
+            })}
+          </ul>
         </div>
-        
-        <h3 className="text-xl sm:text-2xl font-display font-bold mb-2">{title}</h3>
-        <p className="text-neutral-300 text-sm mb-4">{description}</p>
-        
-        <div className="mt-auto">
-          <div className="mb-4">
-            <h4 className="text-sm font-medium text-neutral-200 mb-2">Características</h4>
-            <ul className="space-y-2">
-              {features.map((feature, i) => {
-                // Get check mark color based on accentColor
-                const getCheckClasses = () => {
-                  if (accentColor === "primary") return "text-primary mr-2";
-                  if (accentColor === "secondary") return "text-secondary mr-2";
-                  if (accentColor === "accent") return "text-accent mr-2";
-                  return "text-white mr-2";
-                };
-                
-                return (
-                  <li key={i} className="flex items-start">
-                    <span className={getCheckClasses()}>✓</span>
-                    <span className="text-neutral-300 text-xs sm:text-sm">{feature}</span>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-          
-          <div className="mt-auto pt-4">
-            <div className="text-xl font-display font-bold mb-4 text-center">{price}</div>
-            <WompiPayment 
-              amount={1000} 
-              reference={`product-${title.toLowerCase().replace(/\s+/g, '-')}`}
-              productName={title}
-            />
-          </div>
+        <div className="mt-auto pt-4">
+          <div className="text-xl font-display font-bold mb-4 text-center">{price}</div>
+          <WompiPayment 
+            amount={1000} 
+            reference={`product-${title.toLowerCase().replace(/\s+/g, '-')}`}
+            productName={title}
+          />
         </div>
       </div>
     </div>
@@ -284,12 +209,28 @@ const Products: React.FC = () => {
           ))}
         </div>
       </div>
-      
+
+      {/* Sección destacada RFID */}
+      <section className="py-16 bg-background-light/80 border-t border-neutral-800/30 mt-8">
+        <div className="container mx-auto px-4 max-w-3xl text-center">
+          <h3 className="text-2xl md:text-3xl font-display font-bold mb-4 gradient-text">RFID: Nuestra Especialidad</h3>
+          <p className="text-neutral-300 text-lg mb-6">
+            Somos líderes en soluciones RFID para trazabilidad, control de inventarios, logística y automatización. Nuestra experiencia nos permite ofrecer proyectos llave en mano, integración con sistemas empresariales y soporte completo. ¡Descubre por qué RFID es nuestro fuerte!
+          </p>
+          <a
+            href="/rfid"
+            className="btn-primary inline-block mt-2"
+          >
+            Conoce todo sobre RFID
+          </a>
+        </div>
+      </section>
+
       {/* Decorative elements */}
       <div className="absolute top-40 -left-64 w-96 h-96 bg-primary/5 rounded-full blur-3xl -z-10"></div>
       <div className="absolute bottom-20 -right-64 w-96 h-96 bg-secondary/5 rounded-full blur-3xl -z-10"></div>
     </section>
   );
-};
+}
 
 export default Products;

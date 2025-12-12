@@ -21,8 +21,7 @@ const Footer: React.FC = () => {
             </div>
             
             <p className="text-neutral-400 mb-6">
-              Modernizamos tu negocio con soluciones tecnológicas basadas en datos, 
-              IA y transformación digital.
+              SOFTDATAI: Consultoría tecnológica, migración a la nube, inteligencia artificial, desarrollo de software, análisis de datos y automatización para empresas. Modernizamos tu negocio con innovación y transformación digital.
             </p>
             
             <div className="flex space-x-4">

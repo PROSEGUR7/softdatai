@@ -24,14 +24,10 @@ const Hero: React.FC = () => {
             </div>
             
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-display font-bold mb-4 sm:mb-6 leading-tight">
-              Impulsa tu empresa con{' '}
-              <span className="gradient-text">tecnología</span> y{' '}
-              <span className="accent-gradient-text">datos inteligentes</span>
+              Soluciones tecnológicas inteligentes para empresas: <span className="gradient-text">IA</span>, <span className="accent-gradient-text">nube</span> y <span className="gradient-text">automatización</span>
             </h1>
-            
             <p className="text-base sm:text-lg text-neutral-300 mb-6 sm:mb-8 max-w-2xl mx-auto px-4 sm:px-0">
-              SOFTDATAI moderniza tu negocio con soluciones tecnológicas basadas en 
-              datos, IA y transformación digital
+              Moderniza tu empresa con migración a la nube, inteligencia artificial, desarrollo de software, análisis de datos y automatización de procesos. Expertos en transformación digital y consultoría tecnológica en Colombia y Latinoamérica.
             </p>
             
             <div className="flex justify-center">
