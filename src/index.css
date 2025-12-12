@@ -1,0 +1,112 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-background-dark text-neutral-100;
+  overflow-x: hidden;
+}
+
+/* Hover effect for interactive elements */
+.btn-primary,
+.btn-secondary,
+.card,
+.card-highlight {
+  @apply relative;
+}
+
+.btn-primary::after,
+.btn-secondary::after,
+.card::after,
+.card-highlight::after {
+  content: '';
+  @apply absolute inset-0 opacity-0 transition-opacity duration-300 rounded-xl pointer-events-none;
+  background: radial-gradient(
+    800px circle at var(--mouse-x) var(--mouse-y),
+    rgba(108, 99, 255, 0.06),
+    transparent 40%
+  );
+}
+
+.btn-primary:hover::after,
+.btn-secondary:hover::after,
+.card:hover::after,
+.card-highlight:hover::after {
+  @apply opacity-100;
+}
+
+@layer components {
+  .gradient-text {
+    @apply text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary;
+  }
+
+  .accent-gradient-text {
+    @apply text-transparent bg-clip-text bg-gradient-to-r from-secondary to-accent;
+  }
+
+  .neon-border {
+    @apply border border-primary/50 shadow-neon-primary;
+  }
+
+  .secondary-neon-border {
+    @apply border border-secondary/50 shadow-neon-secondary;
+  }
+
+  .section-padding {
+    @apply py-12 sm:py-16 md:py-20 lg:py-24;
+  }
+
+  .container-padding {
+    @apply px-4 sm:px-6 md:px-8;
+  }
+
+  .btn-primary {
+    @apply px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 md:py-3 bg-gradient-to-r from-primary to-primary-dark text-white text-sm sm:text-base font-medium rounded-md
+    hover:from-primary-light hover:to-primary transition-all duration-300 shadow-neon-primary;
+  }
+
+  .btn-secondary {
+    @apply px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 md:py-3 bg-transparent border border-secondary text-secondary text-sm sm:text-base font-medium rounded-md
+    hover:bg-secondary/10 transition-all duration-300;
+  }
+
+  .card {
+    @apply bg-background-light/80 backdrop-blur-md rounded-xl p-4 sm:p-5 md:p-6 border border-neutral-700/50;
+  }
+
+  .card-highlight {
+    @apply bg-gradient-to-b from-background-light to-background-light/30 backdrop-blur-md 
+    rounded-xl p-4 sm:p-5 md:p-6 border border-primary/20 hover:border-primary/40 transition-all duration-300;
+  }
+
+  .card-glow {
+    @apply relative;
+  }
+
+  .card-glow::before {
+    @apply content-[''] absolute top-0 left-0 w-full h-full bg-gradient-to-r from-primary/20 to-secondary/20 
+    rounded-xl -z-10 blur-xl opacity-50 transition-opacity duration-300;
+  }
+
+  .card-glow:hover::before {
+    @apply opacity-70;
+  }
+}
+
+/* Scroll animations */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-background-dark;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-primary/30 rounded-full hover:bg-primary/50 transition-colors duration-300;
+}
