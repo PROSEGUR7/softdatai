@@ -1,5 +1,4 @@
 import React, { useEffect, useRef } from 'react';
-import WompiPayment from './WompiPayment';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
@@ -9,9 +8,10 @@ interface ProductCardProps {
   description: string;
   icon: React.ReactNode;
   features: string[];
-  price: string;
   accentColor: string;
   delay: number;
+  ctaText?: string;
+  ctaHref?: string;
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({
@@ -19,9 +19,10 @@ const ProductCard: React.FC<ProductCardProps> = ({
   description,
   icon,
   features,
-  price,
   accentColor,
-  delay
+  delay,
+  ctaText,
+  ctaHref
 }) => {
   return (
     <div>
@@ -49,12 +50,16 @@ const ProductCard: React.FC<ProductCardProps> = ({
           </ul>
         </div>
         <div className="mt-auto pt-4">
-          <div className="text-xl font-display font-bold mb-4 text-center">{price}</div>
-          <WompiPayment 
-            amount={1000} 
-            reference={`product-${title.toLowerCase().replace(/\s+/g, '-')}`}
-            productName={title}
-          />
+          {ctaHref && ctaText && (
+            <a
+              href={ctaHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-secondary w-full text-center"
+            >
+              {ctaText}
+            </a>
+          )}
         </div>
       </div>
     </div>
@@ -126,7 +131,6 @@ const Products: React.FC = () => {
         "Panel de administración",
         "Análisis de preferencias de clientes"
       ],
-      price: "Desde $99/mes",
       accentColor: "secondary",
       delay: 0.2
     },
@@ -146,7 +150,6 @@ const Products: React.FC = () => {
         "Integración con CRM",
         "Análisis predictivo"
       ],
-      price: "Desde $149/mes",
       accentColor: "primary",
       delay: 0.4
     },
@@ -165,9 +168,10 @@ const Products: React.FC = () => {
         "Integración con sistemas existentes",
         "Soporte técnico dedicado"
       ],
-      price: "Consultar precio",
       accentColor: "accent",
-      delay: 0.6
+      delay: 0.6,
+      ctaText: "Consultar precio",
+      ctaHref: "https://api.whatsapp.com/send/?phone=573025940259&text&type=phone_number&app_absent=0"
     }
   ];
 
@@ -202,9 +206,10 @@ const Products: React.FC = () => {
               description={product.description}
               icon={product.icon}
               features={product.features}
-              price={product.price}
               accentColor={product.accentColor}
               delay={product.delay}
+              ctaText={product.ctaText}
+              ctaHref={product.ctaHref}
             />
           ))}
         </div>
