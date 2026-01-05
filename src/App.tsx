@@ -5,7 +5,6 @@ import RegistrationPage from './pages/RegistrationPage';
 import RegistrationSuccess from './pages/RegistrationSuccess';
 import PaymentSuccessPage from './pages/PaymentSuccessPage';
 import PaymentPage from './pages/PaymentPage';
-import RFIDLanding from './pages/RFIDLanding';
 
 const App: React.FC = () => {
   return (
@@ -16,7 +15,6 @@ const App: React.FC = () => {
         <Route path="/registro-exitoso" element={<RegistrationSuccess />} />
         <Route path="/payment" element={<PaymentPage />} />
         <Route path="/payment-success" element={<PaymentSuccessPage />} />
-        <Route path="/rfid" element={<RFIDLanding />} />
       </Routes>
     </Router>
   );

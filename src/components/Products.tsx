@@ -218,7 +218,7 @@ const Products: React.FC = () => {
             Somos líderes en soluciones RFID para trazabilidad, control de inventarios, logística y automatización. Nuestra experiencia nos permite ofrecer proyectos llave en mano, integración con sistemas empresariales y soporte completo. ¡Descubre por qué RFID es nuestro fuerte!
           </p>
           <a
-            href="/rfid"
+            href="https://rfid.softdatai.com"
             className="btn-primary inline-block mt-2"
           >
             Conoce todo sobre RFID
