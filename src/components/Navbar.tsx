@@ -92,7 +92,7 @@ const Navbar: React.FC = () => {
             className="hidden md:block"
           >
             <a 
-              href="https://wa.me/573025940259" 
+              href="https://wa.me/573153547423" 
               target="_blank" 
               rel="noopener noreferrer" 
               className="btn-primary text-sm lg:text-base px-4 lg:px-6 py-2 lg:py-3"
@@ -164,7 +164,7 @@ const Navbar: React.FC = () => {
             Contacto
           </a>
           <a
-            href="https://wa.me/573025940259"
+            href="https://wa.me/573153547423"
             target="_blank"
             rel="noopener noreferrer"
             className="btn-primary inline-block text-center mt-2"

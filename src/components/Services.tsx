@@ -1,38 +1,41 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useRef, useState } from 'react';
 import { Cloud, Layers, LineChart, Database, BrainCircuit, Zap } from 'lucide-react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 interface ServiceCardProps {
   icon: React.ReactNode;
   title: string;
   description: string;
-  benefits: string[];
+  tags: string[];
   index: number;
   isActive: boolean;
   onClick: () => void;
+  cardRef: (element: HTMLDivElement | null) => void;
 }
 
 const ServiceCard: React.FC<ServiceCardProps> = ({
   icon,
   title,
   description,
-  benefits,
+  tags,
   index,
   isActive,
   onClick,
+  cardRef,
 }) => {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.5, delay: 0.1 * index }}
-      className={`relative cursor-pointer transition-all duration-300 p-0.5 rounded-xl bg-gradient-to-br from-primary/30 via-primary/10 to-transparent ${
+    <div
+      ref={cardRef}
+      className={`relative cursor-pointer transition-all duration-300 p-0.5 rounded-xl bg-gradient-to-br from-primary/30 via-primary/10 to-transparent h-full ${
         isActive ? 'scale-[1.02]' : 'hover:scale-[1.01]'
       }`}
       onClick={onClick}
+      style={{ opacity: 0 }}
     >
-      <div className="bg-background rounded-xl p-4 sm:p-6 h-full">
+      <div className="bg-background rounded-xl p-4 sm:p-5 h-full min-h-[220px]">
         <div className="flex items-start">
           <div className="rounded-lg p-2 sm:p-3 mr-3 sm:mr-4 bg-primary/20">
             <div className="text-primary">
@@ -40,108 +43,271 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
             </div>
           </div>
           
-          <div className="flex flex-col h-full">
-            <h3 className="text-lg sm:text-xl font-display font-semibold mb-1 sm:mb-2">{title}</h3>
-            <p className="text-neutral-400 text-sm sm:text-base mb-3 sm:mb-4">{description}</p>
+          <div className="flex flex-col h-full w-full">
+            <h3 className="text-base sm:text-lg font-display font-semibold mb-1">{title}</h3>
+            <p className="text-neutral-400 text-sm mb-3 leading-relaxed">{description}</p>
             
-            <div className="mt-auto">
-              <h4 className="text-xs sm:text-sm font-medium text-primary mb-1 sm:mb-2">Beneficios</h4>
-              <ul className="space-y-1 sm:space-y-2">
-                {benefits.slice(0, 4).map((benefit, i) => (
-                  <li key={i} className="flex items-start">
-                    <span className="text-secondary mr-1 sm:mr-2">✓</span>
-                    <span className="text-neutral-300 text-xs sm:text-sm">{benefit}</span>
-                  </li>
-                ))}
-              </ul>
+            <div className="mt-auto flex flex-wrap gap-2">
+              {tags.slice(0, 2).map((tag) => (
+                <span
+                  key={tag}
+                  className="text-xs text-primary/90 bg-primary/10 border border-primary/20 rounded-full px-2 py-1"
+                >
+                  {tag}
+                </span>
+              ))}
             </div>
+
+            <span className="text-xs text-neutral-500 mt-3">Haz clic para ver detalle</span>
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 
+interface ServiceItem {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  summary: string;
+  tags: string[];
+  includes: string[];
+  outcomes: string[];
+}
+
 const Services: React.FC = () => {
   const [activeService, setActiveService] = useState(0);
+  const sectionRef = useRef<HTMLElement>(null);
+  const titleBlockRef = useRef<HTMLDivElement>(null);
+  const cardsRef = useRef<Array<HTMLDivElement | null>>([]);
+  const detailPanelRef = useRef<HTMLDivElement>(null);
+  const ctaRef = useRef<HTMLDivElement>(null);
+  const blobRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      if (titleBlockRef.current) {
+        gsap.fromTo(
+          titleBlockRef.current.children,
+          { y: 26, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.9,
+            ease: 'power3.out',
+            stagger: 0.12,
+            scrollTrigger: {
+              trigger: titleBlockRef.current,
+              start: 'top 80%',
+              toggleActions: 'play none none none'
+            }
+          }
+        );
+      }
+
+      const validCards = cardsRef.current.filter(Boolean);
+
+      if (validCards.length > 0) {
+        gsap.fromTo(
+          validCards,
+          { y: 38, opacity: 0, scale: 0.97 },
+          {
+            y: 0,
+            opacity: 1,
+            scale: 1,
+            duration: 0.7,
+            ease: 'power3.out',
+            stagger: 0.1,
+            scrollTrigger: {
+              trigger: sectionRef.current,
+              start: 'top 70%',
+              toggleActions: 'play none none none'
+            }
+          }
+        );
+      }
+
+      if (ctaRef.current) {
+        gsap.fromTo(
+          ctaRef.current,
+          { y: 20, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.7,
+            ease: 'power2.out',
+            scrollTrigger: {
+              trigger: ctaRef.current,
+              start: 'top 88%',
+              toggleActions: 'play none none none'
+            }
+          }
+        );
+      }
+
+      if (detailPanelRef.current) {
+        gsap.fromTo(
+          detailPanelRef.current,
+          { y: 22, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.8,
+            ease: 'power2.out',
+            scrollTrigger: {
+              trigger: detailPanelRef.current,
+              start: 'top 87%',
+              toggleActions: 'play none none none'
+            }
+          }
+        );
+      }
+
+      if (blobRef.current) {
+        gsap.to(blobRef.current, {
+          y: -22,
+          x: -10,
+          scale: 1.04,
+          duration: 4,
+          ease: 'sine.inOut',
+          repeat: -1,
+          yoyo: true
+        });
+      }
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, []);
+
+  useEffect(() => {
+    if (!detailPanelRef.current) return;
+
+    gsap.fromTo(
+      detailPanelRef.current.children,
+      { y: 12, opacity: 0 },
+      {
+        y: 0,
+        opacity: 1,
+        duration: 0.45,
+        ease: 'power2.out',
+        stagger: 0.08
+      }
+    );
+  }, [activeService]);
   
-  const services = [
+  const services: ServiceItem[] = [
     {
       icon: <Cloud size={24} />,
-      title: "Migración a la nube",
-      description: "Trasladamos y optimizamos tus sistemas en plataformas cloud como Azure y Google Cloud",
-      benefits: [
-        "Reducción de costos de infraestructura",
-        "Mayor seguridad y cumplimiento normativo",
-        "Escalabilidad según demanda",
-        "Acceso remoto seguro a todos tus sistemas"
+      title: "Arquitectura y migración cloud",
+      description: "Migración segura y ordenada a Azure o Google Cloud.",
+      summary: "Definimos una ruta de adopción cloud alineada a tus prioridades operativas y financieras.",
+      tags: ["Azure", "Google Cloud", "Seguridad"],
+      includes: [
+        "Arquitectura y roadmap por fases",
+        "Estrategia de costos y gobierno",
+        "Hardening y cumplimiento"
+      ],
+      outcomes: [
+        "Escalabilidad sin fricciones",
+        "Mayor continuidad del servicio",
+        "Reduccion de costos operativos"
       ]
     },
     {
       icon: <Layers size={24} />,
-      title: "Modernización de plataformas",
-      description: "Actualizamos tus aplicaciones legacy a arquitecturas modernas y eficientes",
-      benefits: [
-        "Mejora del rendimiento y la experiencia de usuario",
-        "Integración con sistemas y APIs modernas",
-        "Adaptación a dispositivos móviles",
-        "Reducción de deuda técnica"
+      title: "Modernización y desarrollo a medida",
+      description: "Evolucionamos plataformas legacy a productos escalables.",
+      summary: "Actualizamos componentes criticos y construimos nuevas capacidades sin frenar la operacion.",
+      tags: ["Apps web", "APIs", "Integraciones"],
+      includes: [
+        "Refactor y modularizacion gradual",
+        "Desarrollo de APIs y frontends",
+        "Integracion con sistemas existentes"
+      ],
+      outcomes: [
+        "Mejor experiencia de usuario",
+        "Menos deuda tecnica",
+        "Mayor velocidad de evolucion"
       ]
     },
     {
       icon: <LineChart size={24} />,
-      title: "Análisis y visualización de datos",
-      description: "Transformamos tus datos en insights accionables con dashboards interactivos",
-      benefits: [
-        "Toma de decisiones basada en datos",
-        "Identificación de tendencias y patrones",
-        "Monitoreo en tiempo real",
-        "Informes personalizados y automáticos"
+      title: "Analítica de datos y BI",
+      description: "Tableros y KPIs para decisiones basadas en datos.",
+      summary: "Convertimos informacion dispersa en una capa de analitica clara para direccion y equipos.",
+      tags: ["Dashboards", "KPIs", "Reportes"],
+      includes: [
+        "Modelo de datos para negocio",
+        "Visualizaciones ejecutivas y operativas",
+        "Alertas y reportes automaticos"
+      ],
+      outcomes: [
+        "Lectura rapida del negocio",
+        "Seguimiento en tiempo real",
+        "Decisiones mas precisas"
       ]
     },
     {
       icon: <Database size={24} />,
-      title: "Optimización de bases de datos",
-      description: "Mejoramos el rendimiento y la seguridad de tus bases de datos empresariales",
-      benefits: [
-        "Mayor velocidad en las consultas",
-        "Reducción de la latencia",
-        "Mejora en la integridad de datos",
-        "Estrategias de backup y recuperación eficientes"
+      title: "Ingeniería y optimización de bases de datos",
+      description: "Rendimiento y disponibilidad para datos criticos.",
+      summary: "Ajustamos estructura, consultas y respaldos para que tus sistemas respondan mejor.",
+      tags: ["Performance", "Backups", "Integridad"],
+      includes: [
+        "Diagnostico y tuning de consultas",
+        "Diseno de respaldo y recuperacion",
+        "Monitoreo preventivo"
+      ],
+      outcomes: [
+        "Menor latencia",
+        "Mayor estabilidad",
+        "Datos mas confiables"
       ]
     },
     {
       icon: <BrainCircuit size={24} />,
-      title: "Soluciones con IA y machine learning",
-      description: "Implementamos inteligencia artificial para automatizar procesos y generar predicciones",
-      benefits: [
-        "Automatización de tareas repetitivas",
-        "Detección de anomalías y fraudes",
-        "Sistemas de recomendación personalizados",
-        "Predicción de comportamientos y tendencias"
+      title: "IA aplicada al negocio",
+      description: "Modelos de IA para prediccion y automatizacion.",
+      summary: "Aplicamos IA donde genera impacto directo: ventas, operacion, riesgo y atencion.",
+      tags: ["Prediccion", "Recomendacion", "Riesgo"],
+      includes: [
+        "Modelos de clasificacion y prediccion",
+        "Deteccion de anomalias",
+        "Asistentes por flujo operativo"
+      ],
+      outcomes: [
+        "Menos tareas manuales",
+        "Mejor exactitud operativa",
+        "Escalamiento de resultados"
       ]
     },
     {
       icon: <Zap size={24} />,
-      title: "Automatización de Procesos",
-      description: "Implementamos soluciones de automatización avanzada con n8n y chatbots para optimizar la atención al cliente y procesos internos",
-      benefits: [
-        "Chatbots inteligentes 24/7 para atención al cliente",
-        "Automatización de flujos de trabajo complejos",
-        "Integración con WhatsApp, Messenger y más",
-        "Análisis de conversaciones para mejora continua"
+      title: "Automatización inteligente",
+      description: "Flujos automáticos con n8n, chatbots y WhatsApp.",
+      summary: "Conectamos canales y sistemas para reducir tiempos de respuesta y aumentar conversion.",
+      tags: ["n8n", "WhatsApp", "CRM"],
+      includes: [
+        "Diseno de flujos de automatizacion",
+        "Chatbots con contexto de negocio",
+        "Integraciones con CRM y canales"
+      ],
+      outcomes: [
+        "Atencion 24/7",
+        "Menos cuellos de botella",
+        "Mejor trazabilidad comercial"
       ]
     }
   ];
 
+  const selectedService = services[activeService];
+
   return (
-    <section id="servicios" className="section-padding relative">
+    <section ref={sectionRef} id="servicios" className="section-padding relative">
       <div className="container mx-auto container-padding">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
+        <div
+          ref={titleBlockRef}
           className="text-center max-w-3xl mx-auto mb-16"
         >
           <div className="flex items-center justify-center mb-4">
@@ -157,10 +323,9 @@ const Services: React.FC = () => {
           </h2>
           
           <p className="text-neutral-300 text-base sm:text-lg px-4 sm:px-0">
-            Ofrecemos un conjunto completo de servicios diseñados para transformar digitalmente tu 
-            organización, optimizar procesos y maximizar el valor de tus datos
+            Un portafolio claro y modular para modernizar tu empresa sin sobrecargar la experiencia
           </p>
-        </motion.div>
+        </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {services.map((service, index) => (
@@ -169,29 +334,67 @@ const Services: React.FC = () => {
               icon={service.icon}
               title={service.title}
               description={service.description}
-              benefits={service.benefits}
+              tags={service.tags}
               index={index}
               isActive={activeService === index}
               onClick={() => setActiveService(index)}
+              cardRef={(element) => {
+                cardsRef.current[index] = element;
+              }}
             />
           ))}
         </div>
+
+        <div
+          ref={detailPanelRef}
+          className="mt-8 p-6 md:p-8 bg-background-light/70 backdrop-blur-md rounded-xl border border-neutral-700/50"
+        >
+          <div className="flex items-center gap-3 mb-3">
+            <div className="text-primary">{selectedService.icon}</div>
+            <h3 className="text-xl md:text-2xl font-display font-bold text-white">{selectedService.title}</h3>
+          </div>
+
+          <p className="text-neutral-300 mb-6">{selectedService.summary}</p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h4 className="text-sm uppercase tracking-wide text-primary font-medium mb-3">Incluye</h4>
+              <ul className="space-y-2">
+                {selectedService.includes.map((item) => (
+                  <li key={item} className="flex items-start">
+                    <span className="text-secondary mr-2">✓</span>
+                    <span className="text-neutral-300 text-sm">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="text-sm uppercase tracking-wide text-primary font-medium mb-3">Resultados esperados</h4>
+              <ul className="space-y-2">
+                {selectedService.outcomes.map((item) => (
+                  <li key={item} className="flex items-start">
+                    <span className="text-primary mr-2">•</span>
+                    <span className="text-neutral-300 text-sm">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
         
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8, delay: 0.4 }}
+        <div
+          ref={ctaRef}
           className="mt-12 text-center"
         >
           <a href="#contacto" className="btn-primary">
             Consulta sobre nuestros servicios
           </a>
-        </motion.div>
+        </div>
       </div>
       
       {/* Decorative elements */}
-      <div className="absolute bottom-20 -right-64 w-96 h-96 bg-secondary/5 rounded-full blur-3xl -z-10"></div>
+      <div ref={blobRef} className="absolute bottom-20 -right-64 w-96 h-96 bg-secondary/5 rounded-full blur-3xl -z-10"></div>
     </section>
   );
 };

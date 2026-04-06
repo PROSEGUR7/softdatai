@@ -44,7 +44,7 @@ const Footer: React.FC = () => {
                 <Instagram size={18} />
               </a>
               <a 
-                href="https://wa.me/573025940259" 
+                href="https://wa.me/573153547423" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center text-neutral-300 hover:bg-primary/20 hover:text-primary transition-colors"
@@ -69,27 +69,27 @@ const Footer: React.FC = () => {
             <ul className="space-y-3">
               <li>
                 <a href="#servicios" className="text-neutral-400 hover:text-primary transition-colors">
-                  Migración a la nube
+                  Arquitectura cloud
                 </a>
               </li>
               <li>
                 <a href="#servicios" className="text-neutral-400 hover:text-primary transition-colors">
-                  Modernización de plataformas
+                  Desarrollo a medida
                 </a>
               </li>
               <li>
                 <a href="#servicios" className="text-neutral-400 hover:text-primary transition-colors">
-                  Análisis de datos
+                  Analítica y BI
                 </a>
               </li>
               <li>
                 <a href="#servicios" className="text-neutral-400 hover:text-primary transition-colors">
-                  Optimización de bases de datos
+                  Optimización de datos
                 </a>
               </li>
               <li>
                 <a href="#servicios" className="text-neutral-400 hover:text-primary transition-colors">
-                  Soluciones con IA
+                  IA y automatización
                 </a>
               </li>
             </ul>

@@ -171,7 +171,7 @@ const Products: React.FC = () => {
       accentColor: "accent",
       delay: 0.6,
       ctaText: "Consultar precio",
-      ctaHref: "https://api.whatsapp.com/send/?phone=573025940259&text&type=phone_number&app_absent=0"
+      ctaHref: "https://api.whatsapp.com/send/?phone=573153547423&text&type=phone_number&app_absent=0"
     }
   ];
 

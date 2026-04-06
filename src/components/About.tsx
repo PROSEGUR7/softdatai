@@ -14,14 +14,14 @@ const AboutCard: React.FC<{
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5, delay: 0.1 * index }}
-      className="card-glow"
+      className="card-glow h-full"
     >
-      <div className="p-6 rounded-xl bg-background-light/70 backdrop-blur-sm border border-neutral-700/50 hover:border-primary/30 transition-all duration-300">
+      <div className="p-5 rounded-xl bg-background-light/70 backdrop-blur-sm border border-neutral-700/50 hover:border-primary/30 transition-all duration-300 h-full min-h-[230px] flex flex-col">
         <div className="bg-primary/10 w-12 h-12 rounded-lg flex items-center justify-center mb-4 text-primary">
           {icon}
         </div>
-        <h3 className="text-xl font-display font-medium mb-3">{title}</h3>
-        <p className="text-neutral-300">{description}</p>
+        <h3 className="text-lg font-display font-medium mb-2">{title}</h3>
+        <p className="text-neutral-300 text-sm leading-relaxed mt-auto">{description}</p>
       </div>
     </motion.div>
   );
@@ -32,22 +32,22 @@ const About: React.FC = () => {
     {
       icon: <CloudCog size={24} />, 
       title: "Migración a la nube",
-      description: "Migración segura y eficiente a la nube (Azure, Google Cloud) para empresas que buscan escalabilidad, seguridad y reducción de costos."
+      description: "Adopción cloud en Azure y Google Cloud con foco en seguridad y costos."
     },
     {
       icon: <Code size={24} />, 
       title: "Desarrollo de software a medida",
-      description: "Desarrollo de software personalizado, adaptado a los procesos únicos de tu empresa, con tecnologías modernas y seguras."
+      description: "Aplicaciones y APIs personalizadas para procesos clave de tu negocio."
     },
     {
       icon: <Database size={24} />, 
       title: "Gestión y análisis de datos",
-      description: "Optimización de bases de datos, análisis de datos empresariales y dashboards para la toma de decisiones basada en datos."
+      description: "Datos organizados, tableros utiles y decisiones basadas en evidencia."
     },
     {
       icon: <BrainCircuit size={24} />, 
       title: "Soluciones de inteligencia artificial",
-      description: "Implementación de IA y machine learning para automatización, predicción y obtención de insights valiosos."
+      description: "Modelos de IA para automatizar, predecir y mejorar resultados."
     }
   ];
 
@@ -76,7 +76,7 @@ const About: React.FC = () => {
           <p className="text-neutral-300 text-lg">
             SOFTDATAI es una consultora especializada en modernización tecnológica, migración a la nube, 
             ciencia de datos y desarrollo de software a medida. Nuestro enfoque se centra en potenciar tu empresa 
-            a través de la innovación tecnológica y la optimización de procesos
+            con soluciones concretas, medibles y orientadas a impacto
           </p>
         </motion.div>
         

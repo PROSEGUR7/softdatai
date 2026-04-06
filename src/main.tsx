@@ -2,6 +2,9 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
+import { printSoftdataiConsoleMark } from './utils/brandConsole';
+
+printSoftdataiConsoleMark();
 
 // Add mouse position tracking for hover effects
 document.addEventListener('mousemove', (e) => {
