@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Menu, X } from 'lucide-react';
+import { Download, Menu, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Navbar: React.FC = () => {
@@ -89,7 +89,7 @@ const Navbar: React.FC = () => {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
-            className="hidden md:block"
+            className="hidden md:flex items-center gap-3"
           >
             <a 
               href="https://wa.me/573153547423" 
@@ -98,6 +98,14 @@ const Navbar: React.FC = () => {
               className="btn-primary text-sm lg:text-base px-4 lg:px-6 py-2 lg:py-3"
             >
               Solicitar Asesoría
+            </a>
+            <a
+              href="/brochure-corporativo-softdatai.pdf"
+              download="Brochure-Corporativo-Softdatai.pdf"
+              className="btn-secondary inline-flex items-center gap-2 text-sm lg:text-base px-4 lg:px-6 py-2 lg:py-3"
+            >
+              <Download size={16} />
+              Brochure Corporativo
             </a>
           </motion.div>
 
@@ -171,6 +179,15 @@ const Navbar: React.FC = () => {
             onClick={toggleMobileMenu}
           >
             Solicitar Asesoría
+          </a>
+          <a
+            href="/brochure-corporativo-softdatai.pdf"
+            download="Brochure-Corporativo-Softdatai.pdf"
+            className="btn-secondary inline-flex items-center justify-center gap-2 text-center"
+            onClick={toggleMobileMenu}
+          >
+            <Download size={16} />
+            Brochure Corporativo
           </a>
         </div>
       </motion.div>
