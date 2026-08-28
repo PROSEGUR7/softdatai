@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User, Loader2, Minimize2, Maximize2 } from 'lucide-react';
 import Mascot from './Mascot';
+import MascotHead from './MascotHead';
 
 const API_KEY = 'AIzaSyDpZNr8t7h3mNY4v6fJhzVW0WzbyJl_WzM';
 const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${API_KEY}`;
@@ -89,7 +90,7 @@ const AIChat: React.FC = () => {
       <div className={`bg-background-dark/95 backdrop-blur-md rounded-2xl border border-neutral-700/50 shadow-2xl w-full ${isMinimized ? 'h-16' : 'h-[500px] max-h-[80vh]'}`}>
         <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-700/50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center"><Bot className="text-primary" size={20} /></div>
+            <MascotHead size={48} animationSpeed={180} />
             <div><h3 className="text-white font-medium">Asistente Softdatai</h3><p className="text-neutral-400 text-xs">IA • Siempre disponible</p></div>
           </div>
           <button onClick={() => setIsMinimized(!isMinimized)} className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-700/50 rounded-lg">{isMinimized ? <Maximize2 size={18} /> : <Minimize2 size={18} />}</button>

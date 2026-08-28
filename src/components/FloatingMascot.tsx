@@ -1,11 +1,28 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User, Loader2, X, Sparkles } from 'lucide-react';
 import Mascot from './Mascot';
+import MascotHead from './MascotHead';
 
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY as string;
-const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=' + API_KEY;
+const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=' + API_KEY;
 
-const SYSTEM_PROMPT = 'Eres el asistente virtual de SOFTDATAI. Solo responde preguntas sobre servicios de migracion a la nube, IA, desarrollo de software, analisis de datos y transformacion digital. Se amigable y responde en espanol. Manten tus respuestas cortas y concisas (maximo 2-3 oraciones).';
+const SYSTEM_PROMPT = `Eres el asistente oficial de Softdatai, un chatbot alojado en softdatai.com. Tu única función es entregar información clara, precisa y profesional sobre la empresa, sus servicios, soluciones y stack tecnológico.
+
+REGLAS ESTRICTAS (cumplir siempre, sin excepción):
+
+1. SALUDO ÚNICO: Saluda SOLO en el primer turno de la conversación (cuando no hay mensajes previos del usuario). A partir del segundo turno en adelante, JAMÁS vuelvas a saludar. NO escribas "Hola", "Buenos días", "Qué gusto saludarte", "Un placer" ni variantes al inicio de respuestas en turnos 2+.
+
+2. SIN PREGUNTAS DE CIERRE: Jamás cierres con preguntas. PROHIBIDO usar "¿En qué más te puedo ayudar?", "¿Te gustaría saber más?", "¿Tienes alguna duda?", "¿Cuál de estas áreas podemos ayudarte hoy?", "¿Cómo podemos asistirte?" o cualquier pregunta al final. Termina la respuesta inmediatamente después de entregar la información.
+
+3. NUNCA repitas la pregunta del usuario. Responde directamente.
+
+4. NUNCA termines invitando a continuar la conversación. Solo entrega el dato solicitado y punto.
+
+5. CEROS RELLENO: Sin rodeos, sin frases meta-conversacionales ("Con gusto", "Por supuesto", "Es un placer", "Con mucho gusto te ayudo"), sin formalidades innecesarias. Empieza la respuesta directamente con el contenido útil.
+
+6. TONO: Profesional, técnico y cercano. Habla siempre en nombre de Softdatai.
+
+Si dudas entre saludar o no saludar, NO saludes. Es preferible omitir el saludo a repetirlo.`;
 
 interface Message {
   id: string;
@@ -29,13 +46,14 @@ const FloatingMascot: React.FC = () => {
     if (isOpen && messagesEndRef.current) { messagesEndRef.current.scrollIntoView({ behavior: 'smooth' }); }
   }, [isOpen, messages]);
 
-  const callGeminiAPI = async (text: string, retries = 3): Promise<string> => {
+  const callGeminiAPI = async (history: Message[], retries = 3): Promise<string> => {
+    const contents = history.map(m => ({ role: m.role, parts: [{ text: m.content }] }));
     for (let i = 0; i < retries; i++) {
       try {
         const res = await fetch(API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents: [{ parts: [{ text }] }], systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] }, generationConfig: { temperature: 0.7, maxOutputTokens: 500 } }),
+          body: JSON.stringify({ contents, systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] }, generationConfig: { temperature: 0.3, maxOutputTokens: 300 } }),
         });
         
         if (res.ok) {
@@ -70,10 +88,11 @@ const FloatingMascot: React.FC = () => {
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
     const userMsg: Message = { id: Date.now().toString(), role: 'user', content: input.trim() };
-    setMessages(prev => [...prev, userMsg]);
+    const nextHistory: Message[] = [...messages, userMsg];
+    setMessages(nextHistory);
     setInput('');
     setIsLoading(true);
-    const aiRes = await callGeminiAPI(userMsg.content);
+    const aiRes = await callGeminiAPI(nextHistory);
     setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), role: 'model', content: aiRes }]);
     setIsLoading(false);
     setTimeout(() => inputRef.current?.focus(), 100);
@@ -89,7 +108,7 @@ const FloatingMascot: React.FC = () => {
           <div className="bg-neutral-900/98 backdrop-blur-xl rounded-2xl border border-neutral-700/50 shadow-2xl overflow-hidden">
             <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-primary/20 to-accent/20 border-b border-neutral-700/50">
               <div className="flex items-center gap-3">
-                <Mascot size={40} animationSpeed={300} />
+                <MascotHead size={48} animationSpeed={180} zoom={0.4} borderRadius={0} />
                 <div><h3 className="text-white font-semibold text-sm">Asistente Softdatai</h3><p className="text-neutral-400 text-xs">IA - En linea</p></div>
               </div>
               <button onClick={() => setIsOpen(false)} className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-700/50 rounded-lg transition-colors"><X size={18} /></button>
