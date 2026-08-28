@@ -1,11 +1,21 @@
-﻿import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Loader2, X, Minimize2, Maximize2 } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Send, Bot, User, Loader2, Minimize2, Maximize2 } from 'lucide-react';
 import Mascot from './Mascot';
 
 const API_KEY = 'AIzaSyDpZNr8t7h3mNY4v6fJhzVW0WzbyJl_WzM';
 const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
 
-const SYSTEM_PROMPT = `Eres el asistente virtual de SOFTDATAI. Solo responde sobre servicios de migración a la nube, IA, desarrollo de software, análisis de datos y transformación digital. Sé amigable y responde en español.`;
+const SYSTEM_PROMPT = `Eres el asistente oficial de Softdatai, un chatbot alojado en softdatai.com diseñado exclusivamente para brindar información clara, precisa y profesional sobre la empresa, sus servicios, soluciones y stack tecnológico.
+
+Reglas de interacción:
+
+Saludo único: Saluda amablemente únicamente en el primer mensaje de la interacción. Si el usuario ya está conversando contigo, NO vuelvas a saludar.
+
+Sin preguntas finales: Responde directamente lo que se te consulte sin cerrar con preguntas de seguimiento ni frases como "¿En qué más te puedo ayudar?", "¿Te gustaría saber más?" o "¿Tienes alguna duda?". Termina la respuesta tras entregar la información solicitada.
+
+Cero relleno: Sé directo, claro y conciso. Evita rodeos, frases meta-conversacionales o formalidades innecesarias.
+
+Enfoque corporativo: Habla siempre en nombre de Softdatai con un tono profesional, técnico y cercano.`;
 
 interface Message {
   id: string;
@@ -14,9 +24,7 @@ interface Message {
 }
 
 const AIChat: React.FC = () => {
-  const [messages, setMessages] = useState<Message[]>([
-    { id: '1', role: 'model', content: '¡Hola! 👋 Soy el asistente de SOFTDATAI. ¿En qué puedo ayudarte?' }
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
