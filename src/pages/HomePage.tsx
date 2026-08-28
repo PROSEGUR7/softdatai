@@ -10,10 +10,10 @@ import Contact from '../components/Contact';
 import Footer from '../components/Footer';
 import ParticleBackground from '../components/ParticleBackground';
 import CursorSpotlight from '../components/CursorSpotlight';
+import FloatingMascot from '../components/FloatingMascot';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-// Register ScrollTrigger plugin
 gsap.registerPlugin(ScrollTrigger);
 
 const HomePage: React.FC = () => {
@@ -29,7 +29,6 @@ const HomePage: React.FC = () => {
   };
 
   useEffect(() => {
-    // Initial page load animation
     const tl = gsap.timeline();
     tl.fromTo(
       sectionRefs.hero.current,
@@ -37,7 +36,6 @@ const HomePage: React.FC = () => {
       { opacity: 1, duration: 1 }
     );
 
-    // Scroll animations for each section
     const sections = [
       sectionRefs.about.current,
       sectionRefs.services.current,
@@ -67,7 +65,6 @@ const HomePage: React.FC = () => {
     });
 
     return () => {
-      // Clean up ScrollTrigger instances
       ScrollTrigger.getAll().forEach(trigger => trigger.kill());
     };
   }, []);
@@ -107,9 +104,12 @@ const HomePage: React.FC = () => {
         <div ref={sectionRefs.contact}>
           <Contact />
         </div>
+
       </main>
-      
       <Footer />
+      
+      {/* Mascota flotante con chat IA */}
+      <FloatingMascot />
     </div>
   );
 };

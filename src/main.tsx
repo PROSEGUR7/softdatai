@@ -3,6 +3,24 @@ import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
 import { printSoftdataiConsoleMark } from './utils/brandConsole';
+import { useTypewriterTitle } from './hooks/useTypewriterTitle';
+
+// Componente que maneja el título typewriter
+const TypewriterTitle: React.FC = () => {
+  const phrases = [
+    'Soluciones tecnológicas inteligentes',
+    'Migración a la nube',
+    'Inteligencia artificial',
+    'Desarrollo de software',
+    'Transformación digital',
+    'Automatización de procesos',
+    'Análisis de datos',
+  ];
+  
+  useTypewriterTitle(phrases, 80, 50, 2000);
+  
+  return null;
+};
 
 printSoftdataiConsoleMark();
 
@@ -22,6 +40,7 @@ document.addEventListener('mousemove', (e) => {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
+    <TypewriterTitle />
     <App />
   </StrictMode>
 );

@@ -139,13 +139,7 @@ const Footer: React.FC = () => {
                   Inicio
                 </a>
               </li>
-              <li>
-                <a href="#nosotros" className="text-neutral-400 hover:text-primary transition-colors">
-                  ¿Quiénes somos?
-                </a>
-              </li>
-              <li>
-                <a href="#servicios" className="text-neutral-400 hover:text-primary transition-colors">
+              <li>\n                <a href="#servicios" className="text-neutral-400 hover:text-primary transition-colors">
                   Servicios
                 </a>
               </li>
