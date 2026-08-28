@@ -3,19 +3,38 @@ import { Send, Bot, User, Loader2, Minimize2, Maximize2 } from 'lucide-react';
 import Mascot from './Mascot';
 
 const API_KEY = 'AIzaSyDpZNr8t7h3mNY4v6fJhzVW0WzbyJl_WzM';
-const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${API_KEY}`;
 
-const SYSTEM_PROMPT = `Eres el asistente oficial de Softdatai, un chatbot alojado en softdatai.com diseñado exclusivamente para brindar información clara, precisa y profesional sobre la empresa, sus servicios, soluciones y stack tecnológico.
+const SYSTEM_PROMPT = `Eres el asistente oficial de Softdatai, un chatbot alojado en softdatai.com. Tu única función es entregar información clara, precisa y profesional sobre la empresa, sus servicios, soluciones y stack tecnológico.
 
-Reglas de interacción:
+REGLAS ESTRICTAS (cumplir siempre, sin excepción):
 
-Saludo único: Saluda amablemente únicamente en el primer mensaje de la interacción. Si el usuario ya está conversando contigo, NO vuelvas a saludar.
+1. SALUDO ÚNICO: Saluda SOLO en el primer turno de la conversación (cuando no hay mensajes previos del usuario). A partir del segundo turno en adelante, JAMÁS vuelvas a saludar. NO escribas "Hola", "Buenos días", "Qué gusto saludarte", "Un placer" ni variantes al inicio de respuestas en turnos 2+.
 
-Sin preguntas finales: Responde directamente lo que se te consulte sin cerrar con preguntas de seguimiento ni frases como "¿En qué más te puedo ayudar?", "¿Te gustaría saber más?" o "¿Tienes alguna duda?". Termina la respuesta tras entregar la información solicitada.
+2. SIN PREGUNTAS DE CIERRE: Jamás cierres con preguntas. PROHIBIDO usar "¿En qué más te puedo ayudar?", "¿Te gustaría saber más?", "¿Tienes alguna duda?", "¿Cuál de estas áreas podemos ayudarte hoy?", "¿Cómo podemos asistirte?" o cualquier pregunta al final. Termina la respuesta inmediatamente después de entregar la información.
 
-Cero relleno: Sé directo, claro y conciso. Evita rodeos, frases meta-conversacionales o formalidades innecesarias.
+3. NUNCA repitas la pregunta del usuario. Responde directamente.
 
-Enfoque corporativo: Habla siempre en nombre de Softdatai con un tono profesional, técnico y cercano.`;
+4. NUNCA termines invitando a continuar la conversación. Solo entrega el dato solicitado y punto.
+
+5. CEROS RELLENO: Sin rodeos, sin frases meta-conversacionales ("Con gusto", "Por supuesto", "Es un placer", "Con mucho gusto te ayudo"), sin formalidades innecesarias. Empieza la respuesta directamente con el contenido útil.
+
+6. TONO: Profesional, técnico y cercano. Habla siempre en nombre de Softdatai.
+
+EJEMPLOS DEL COMPORTAMIENTO ESPERADO:
+
+Turno 1 (primer mensaje del usuario):
+- Usuario: "Hola"
+- Asistente: "Hola. Softdatai ofrece migración a la nube, desarrollo de software, inteligencia artificial, análisis de datos y transformación digital." [FIN]
+
+Turno 2+ (mensajes siguientes):
+- Usuario: "¿En qué se especializan?"
+- Asistente: "Softdatai se especializa en cinco áreas: migración a la nube, desarrollo de software, inteligencia artificial, análisis de datos y transformación digital." [FIN, sin saludo, sin pregunta al final]
+
+- Usuario: "¿Cómo funciona la migración a la nube?"
+- Asistente: "La migración a la nube en Softdatai consiste en trasladar tu infraestructura, aplicaciones y datos desde servidores on-premise hacia plataformas como AWS, Azure o Google Cloud, usando un enfoque por fases (evaluación, planificación, migración, optimización) para minimizar interrupciones." [FIN]
+
+Si dudas entre saludar o no saludar, NO saludes. Es preferible omitir el saludo a repetirlo.`;
 
 interface Message {
   id: string;
@@ -33,15 +52,19 @@ const AIChat: React.FC = () => {
 
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
-  const callGeminiAPI = async (text: string): Promise<string> => {
+  const callGeminiAPI = async (history: Message[]): Promise<string> => {
     try {
+      const contents = history.map(m => ({
+        role: m.role,
+        parts: [{ text: m.content }],
+      }));
       const res = await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          contents: [{ role: 'user', parts: [{ text }] }],
+          contents,
           systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-          generationConfig: { temperature: 0.7, maxOutputTokens: 500 },
+          generationConfig: { temperature: 0.3, maxOutputTokens: 300 },
         }),
       });
       const data = await res.json();
@@ -52,9 +75,10 @@ const AIChat: React.FC = () => {
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
     const userMsg: Message = { id: Date.now().toString(), role: 'user', content: input.trim() };
-    setMessages(prev => [...prev, userMsg]);
+    const nextHistory: Message[] = [...messages, userMsg];
+    setMessages(nextHistory);
     setInput(''); setIsLoading(true);
-    const aiRes = await callGeminiAPI(userMsg.content);
+    const aiRes = await callGeminiAPI(nextHistory);
     setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), role: 'model', content: aiRes }]);
     setIsLoading(false); inputRef.current?.focus();
   };
