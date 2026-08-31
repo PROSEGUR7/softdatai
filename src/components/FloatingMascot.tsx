@@ -1068,6 +1068,7 @@ IMPORTANTE:
 - Una URL o un email SOLO se escribe UNA vez por respuesta. NUNCA repitas la misma URL o email en lineas separadas. Si ya lo entregaste en una lista, no lo vuelvas a mencionar.
 - Cuando entregues datos de contacto al final de una respuesta, hazlo en UNA sola linea limpia, no en multiples lineas con palabras sueltas cortadas.
 - NUNCA escribas una URL completa en una linea y luego repitas la misma URL pelada (sin https:// o solo el dominio) en otra linea. Esto genera texto duplicado visible en el chat. Solo UNA mencion por dato de contacto, completa.
+- NUNCA termines una linea con dos puntos ":" seguido de un caracter suelto o un digito suelto en otra linea (ej MAL: "WhatsApp: +57 315 354 7423 :\n3" o "Sitio web: https://...com\ntdatai.com"). Cada dato es UNA linea completa, sin caracteres colgantes.
 - Cuando entregues los datos de contacto, usa EXACTAMENTE este formato atomico de tres lineas, sin texto adicional antes o despues:
   WhatsApp oficial: +57 315 354 7423
   Sitio web: https://softdatai.com
@@ -1236,20 +1237,21 @@ const FloatingMascot: React.FC = () => {
   };
 
   /**
-   * Red de seguridad del frontend: limpia la salida cruda del bot
-   * para eliminar asteriscos sueltos, enlaces duplicados y fragmentos
-   * de URL sueltos (ej: "tdatai.com", "wa.me/573153547423") que el
-   * modelo a veces escribe en líneas adicionales.
+   * Red de seguridad del frontend: limpia la salida cruda del bot.
+   * - Elimina asteriscos sueltos pegados a palabras.
+   * - Elimina duplicados de URLs / emails / telefonos.
+   * - Elimina fragmentos sueltos de URL ("tdatai.com", "wa.me/...", "+57 315 354 7423").
+   * - Elimina caracteres sueltos (digitos, letras) en lineas que solo tienen 1-3 chars.
    */
   const sanitizeBotResponse = (raw: string): string => {
-    let out = raw;
+    let out = raw.replace(/\r/g, '');
 
     // 1. Proteger pares validos de **palabra** con placeholder
     const OPEN = '\u0001BO';
     const CLOSE = '\u0002BC';
     out = out.replace(/\*\*([^*\n][^*\n]*?)\*\*/g, (_m, inner) => `${OPEN}${inner}${CLOSE}`);
 
-    // 2. Eliminar asteriscos huerfanos pegados a letras
+    // 2. Eliminar asteriscos huerfanos pegados a letras o sueltos
     out = out.replace(/([A-Za-záéíóúÁÉÍÓÚñÑüÜ])\*+/g, '$1');
     out = out.replace(/\*+([A-Za-záéíóúÁÉÍÓÚñÑüÜ])/g, '$1');
     out = out.replace(/(:\s*)\*+/g, '$1');
@@ -1257,34 +1259,59 @@ const FloatingMascot: React.FC = () => {
     out = out.replace(/(^|\s)\*+(\s|$|[,.;:!?])/g, '$1$2');
     out = out.replace(/\*{3,}/g, '');
 
-    // 3. Restaurar los pares validos
+    // 3. Restaurar los pares validos de **
     out = out.replace(new RegExp(`${OPEN}([\\s\\S]*?)${CLOSE}`, 'g'), '**$1**');
 
-    // 4. Limpiar líneas que son SOLO un fragmento de URL ya entregado
-    //    Patrones problematicos: "softdatai.com", "tdatai.com", "wa.me/xxxxx",
-    //    "www.softdatai.com", versiones peladas de URLs ya mencionadas.
+    // 4. Eliminar lineas problematicas por tipo de contenido
     out = out
       .split('\n')
       .map((line) => {
-        const trimmed = line.trim();
-        // Detecta lineas que consisten SOLO en un fragmento de URL
-        // ej: "softdatai.com", "www.softdatai.com", "wa.me/573153547423"
-        const FRAGMENT_REGEX = /^(?:www\.)?[a-z0-9-]+\.[a-z]{2,}(?:\.[a-z]{2,})?(?:\/[^\s]*)?$|^(?:wa\.me|api\.whatsapp\.com|t\.me|telegram\.me)\/\d+$/i;
-        if (FRAGMENT_REGEX.test(trimmed)) {
-          return ''; // Eliminar la linea completa
+        const t = line.trim();
+
+        // Linea vacia -> se conserva (servira luego para compactar)
+        if (t === '') return '';
+
+        // Patron A: fragmento de URL o dominio pelado
+        //   "softdatai.com", "tdatai.com", "www.softdatai.com",
+        //   "subdominio.example.com", "example.co.uk"
+        const URL_FRAG = /^(?:https?:\/\/)?(?:www\.)?[a-z0-9-]+(?:\.[a-z0-9-]+)+(?:\/[^\s]*)?$/i;
+
+        // Patron B: servidor de mensajeria pelado
+        //   "wa.me/573153547423", "t.me/usuario", "api.whatsapp.com/..."
+        const MSG_FRAG = /^(?:wa\.me|api\.whatsapp\.com|t\.me|telegram\.me|bit\.ly)\/[a-z0-9_-]+$/i;
+
+        // Patron C: telefono internacional pelado (con o sin +)
+        //   "+57 315 354 7423", "57 315 354 7423", "3153547423"
+        const PHONE_FRAG = /^\+?\d[\d\s\-().]{6,}\d$/;
+
+        // Patron D: linea con 1-4 caracteres alfanumericos sueltos (fragmentos residuales)
+        //   Solo si NO parece una palabra util (sin letras largas) y NO es un signo decorativo valido
+        //   Ejemplos que cazara: "3", ":", ".", "cial", "ros", "ión"
+        //   Ejemplos que NO cazara: "ok", "si", "no"
+        const SHORT_FRAG = /^[A-Za-záéíóúÁÉÍÓÚñÑüÜ0-9.,:;!?¿¡\s]{1,4}$/;
+
+        if (URL_FRAG.test(t) || MSG_FRAG.test(t) || PHONE_FRAG.test(t)) {
+          return '';
+        }
+        if (SHORT_FRAG.test(t)) {
+          return '';
         }
         return line;
       })
       .join('\n');
 
-    // 5. Eliminar URLs/emails duplicados identicos en lineas separadas
+    // 5. Eliminar URLs/emails/telefonos duplicados completos en lineas separadas
     const seen = new Set<string>();
     out = out
       .split('\n')
       .map(line => {
-        const m = line.match(/https?:\/\/[^\s]+|[\w.+-]+@[\w-]+\.[\w.-]+/);
+        // Extrae el primer enlace / telefono / email significativo
+        const m =
+          line.match(/https?:\/\/[^\s]+/)?.[0] ||
+          line.match(/\+?\d[\d\s\-().]{6,}\d/)?.[0]?.replace(/\D/g, '') ||
+          line.match(/[\w.+-]+@[\w-]+\.[\w.-]+/)?.[0];
         if (m) {
-          const key = m[0].toLowerCase();
+          const key = m.toLowerCase();
           if (seen.has(key)) return '';
           seen.add(key);
         }
@@ -1292,9 +1319,9 @@ const FloatingMascot: React.FC = () => {
       })
       .join('\n');
 
-    // 6. Compactar saltos de linea multiples y lineas vacias consecutivas
+    // 6. Compactar saltos de linea multiples y limpiar vacios
     out = out.replace(/\n{3,}/g, '\n\n');
-    out = out.replace(/^\s*\n/gm, '').trim();
+    out = out.replace(/^[ \t]*\n/gm, '').trim();
 
     return out;
   };
