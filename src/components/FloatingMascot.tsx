@@ -1063,14 +1063,62 @@ El frontend renderiza automaticamente algunos patrones como enlaces cliqueables.
 
 IMPORTANTE:
 - NUNCA uses la sintaxis Markdown [texto](url). Escribelo crudo, el frontend hace el resto.
-- NUNCA dejes asteriscos pegados a palabras sin cerrar. Ejemplos MAL: "perfil**", "Electronico:**", "web:**". Cada ** debe tener su ** de cierre.
+- NUNCA dejes asteriscos pegados a palabras sin cerrar. Ejemplos MAL: "perfil**", "Electronico:**", "web:**". Cada ** debe tener su ** de cierre inmediato en la misma palabra.
 - Si el usuario te pide explicitamente un correo o telefono de contacto, entreguelo en formato plano (gerencia@softdatai.com, +57 315 354 7423) y NO en formato Markdown.
+- Una URL o un email SOLO se escribe UNA vez por respuesta. NUNCA repitas la misma URL o email en lineas separadas. Si ya lo entregaste en una lista, no lo vuelvas a mencionar.
+- Cuando entregues datos de contacto al final de una respuesta, hazlo en UNA sola linea limpia, no en multiples lineas con palabras sueltas cortadas.
 
 Formato Markdown permitido (opcional y conservador):
 - **negrita** solo para resaltar terminos clave como nombres propios o tecnologias.
 - *cursiva* solo para enfasis sutil.
 - Listas con guion (-) o asterisco (*) en lineas separadas.
-- Prohibido: # encabezados, tablas, bloques de codigo.`;
+- Prohibido: # encabezados, tablas, bloques de codigo.
+
+==================================================
+20. PROHIBICION DE FRAGMENTOS ROTOS Y REPETICIONES
+==================================================
+
+- NUNCA entregues fragmentos de palabras cortadas. Si una respuesta termina abruptamente con un final como "ros", "ón", "cial", "tiva", "ión", es porque la respuesta esta incompleta y debe rehacerse.
+- NUNCA dividas una palabra o concepto entre lineas usando formato de negrita parcial. Ejemplo MAL: "WhatsApp ofic**iales" (apertura ** sin cierre en la misma linea).
+- NUNCA listes el mismo enlace (URL, email o WhatsApp) mas de una vez en una misma respuesta. Si ya lo entregaste, no lo repitas.
+- Cuando menciones datos de contacto, hazlo de forma atomica: una linea por dato. Ejemplo CORRECTO:
+  WhatsApp oficial: +57 315 354 7423
+  Sitio web: https://softdatai.com
+  Correo: gerencia@softdatai.com
+- NO uses negrita parcial de palabras. Si decides resaltar algo, es la palabra completa entre ** y el cierre ** va INMEDIATAMENTE despues, sin espacios, sin palabras intermedias.
+
+==================================================
+21. CONCISION EN RESPUESTAS
+==================================================
+
+Adapta la longitud de la respuesta al tipo de pregunta:
+
+PREGUNTA SIMPLE ("hola", "cuales son los canales?", "que servicios ofrecen?"):
+- Respuesta breve: maximo 4-6 lineas.
+- NO listes exhaustivamente todas las capacidades.
+- NO entregues secciones largas.
+
+PREGUNTA COMERCIAL O DE PROYECTO:
+- Respuesta moderada con orientacion + beneficio.
+- Maximo 1 parrafo de explicacion + datos de contacto.
+
+PREGUNTA TECNICA:
+- Respuesta detallada solo si el usuario lo pide explicitamente o la pregunta requiere explicacion larga.
+
+REGLA GENERAL: Si la pregunta es concreta, la respuesta debe ser concreta. No rellenes con informacion que el usuario no pidio. Por cada 3 oraciones utiles, asegurate de que aportan algo a lo preguntado.
+
+==================================================
+22. CHECKLIST ANTES DE RESPONDER
+==================================================
+
+Antes de enviar cada respuesta, verifica internamente:
+1. ¿La respuesta contesta directamente la pregunta?
+2. ¿Hay asteriscos ** sueltos pegados a palabras?
+3. ¿Alguna palabra esta cortada al final (ej: "ros", "cial")?
+4. ¿Alguna URL o email aparece mas de una vez?
+5. ¿La longitud es proporcional a la pregunta?
+
+Si detectas alguno de estos problemas, regenera la respuesta antes de enviarla.`;
 
 interface Message {
   id: string;
@@ -1176,9 +1224,59 @@ const FloatingMascot: React.FC = () => {
     setInput('');
     setIsLoading(true);
     const aiRes = await callGeminiAPI(nextHistory);
-    setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), role: 'model', content: aiRes }]);
+    const cleaned = sanitizeBotResponse(aiRes);
+    setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), role: 'model', content: cleaned }]);
     setIsLoading(false);
     setTimeout(() => inputRef.current?.focus(), 100);
+  };
+
+  /**
+   * Red de seguridad del frontend: limpia la salida cruda del bot
+   * para eliminar asteriscos sueltos y enlaces duplicados
+   * que el modelo haya colado pese a las instrucciones.
+   */
+  const sanitizeBotResponse = (raw: string): string => {
+    let out = raw;
+
+    // 1. Proteger pares validos de **palabra** con placeholder
+    const OPEN = '\u0001BO';
+    const CLOSE = '\u0002BC';
+    out = out.replace(/\*\*([^*\n][^*\n]*?)\*\*/g, (_m, inner) => `${OPEN}${inner}${CLOSE}`);
+
+    // 2. Eliminar asteriscos huerfanos pegados a letras
+    out = out.replace(/([A-Za-záéíóúÁÉÍÓÚñÑüÜ])\*+/g, '$1');
+    out = out.replace(/\*+([A-Za-záéíóúÁÉÍÓÚñÑüÜ])/g, '$1');
+    out = out.replace(/(:\s*)\*+/g, '$1');
+    out = out.replace(/\*+\s*([\.,;:])/g, '$1');
+    out = out.replace(/(^|\s)\*+(\s|$|[,.;:!?])/g, '$1$2');
+    out = out.replace(/\*{3,}/g, '');
+
+    // 3. Restaurar los pares validos
+    out = out.replace(new RegExp(`${OPEN}([\\s\\S]*?)${CLOSE}`, 'g'), '**$1**');
+
+    // 4. Eliminar URLs/emails duplicados idénticos en líneas separadas
+    const seen = new Set<string>();
+    out = out
+      .split('\n')
+      .map(line => {
+        const m = line.match(/https?:\/\/[^\s]+|[\w.+-]+@[\w-]+\.[\w.-]+/);
+        if (m) {
+          const key = m[0].toLowerCase();
+          if (seen.has(key)) return '';
+          seen.add(key);
+        }
+        return line;
+      })
+      .filter((line, idx, arr) => {
+        // Quita líneas que quedaron vacías después del paso anterior
+        return !(line.trim() === '' && idx > 0 && arr[idx - 1].trim() === '');
+      })
+      .join('\n');
+
+    // 5. Compactar múltiples saltos de línea en uno solo
+    out = out.replace(/\n{3,}/g, '\n\n').trim();
+
+    return out;
   };
 
   return (

@@ -45,7 +45,9 @@ const EMAIL_REGEX = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/;
 const PHONE_REGEX = /\+?\d[\d\s\-().]{6,}\d/;
 
 // URL cruda con o sin protocolo: https://ejemplo.com, www.ejemplo.com, dominio.com/path
-const URL_REGEX = /(?:https?:\/\/|www\.)[^\s<>()[\]{}'"]+[^\s<>()[\]{}'".:,;!?]/;
+// Termina en espacios o en caracteres que típicamente NO son parte de la URL.
+// NO incluye punto final, coma, punto y coma, dos puntos al final.
+const URL_REGEX = /(?:https?:\/\/|www\.)[^\s<>()[\]{}'"¡¿]*[^\s<>()[\]{}'"¡¿.,;:!?]/;
 
 /**
  * Limpia un teléfono capturado: deja solo dígitos (sin +, espacios, guiones)
@@ -189,13 +191,35 @@ function parseInline(input: string): Token[] {
 /**
  * Limpia asteriscos huérfanos que el modelo suele dejar pegados
  * a palabras: "perfil**", "web**", "Electronico:**".
+ *
+ * Estrategia:
+ *  1. Marca con placeholder los pares válidos **palabra** (balanceados y bien formados).
+ *  2. Aplica reglas agresivas para limpiar los ** restantes (pegados a letras, sueltos, etc.).
+ *  3. Restaura los placeholders con ** nuevamente.
  */
 function cleanOrphanAsterisks(input: string): string {
-  let out = input.replace(/([A-Za-záéíóúÁÉÍÓÚñÑüÜ])\*+/g, '$1');
+  // Paso 1: identificar pares balanceados y protegidos con placeholder para no tocarlos
+  const PROTECT_OPEN = '\u0001BO';
+  const PROTECT_CLOSE = '\u0002BC';
+  let out = input.replace(/\*\*([^*\n][^*\n]*?)\*\*/g, (_m, inner) => `${PROTECT_OPEN}${inner}${PROTECT_CLOSE}`);
+
+  // Paso 2: limpieza agresiva de ** residuales
+  // Caso A: ** pegado a letra antes: "web**"
+  out = out.replace(/([A-Za-záéíóúÁÉÍÓÚñÑüÜ])\*+/g, '$1');
+  // Caso B: ** pegado a letra después: "**perfil"
   out = out.replace(/\*+([A-Za-záéíóúÁÉÍÓÚñÑüÜ])/g, '$1');
-  out = out.replace(/:\s*\*+/g, ':');
+  // Caso C: ** después de ":" tipo "Electronico:**"
+  out = out.replace(/(:\s*)\*+/g, '$1');
+  // Caso D: ** antes de puntuación tipo "**,"
   out = out.replace(/\*+\s*([\.,;:])/g, '$1');
+  // Caso E: ** sueltos entre espacios/inicio/fin
   out = out.replace(/(^|\s)\*+(\s|$|[,.;:!?])/g, '$1$2');
+  // Caso F: triples o más asteriscos
+  out = out.replace(/\*{3,}/g, '');
+
+  // Paso 3: restaurar los ** originales de los pares protegidos
+  out = out.replace(new RegExp(`${PROTECT_OPEN}([\\s\\S]*?)${PROTECT_CLOSE}`, 'g'), '**$1**');
+
   return out;
 }
 
