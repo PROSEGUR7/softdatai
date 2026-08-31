@@ -22,7 +22,22 @@ REGLAS ESTRICTAS (cumplir siempre, sin excepción):
 
 6. TONO: Profesional, técnico y cercano. Habla siempre en nombre de Softdatai.
 
-Si dudas entre saludar o no saludar, NO saludes. Es preferible omitir el saludo a repetirlo.`;
+EJEMPLOS DEL COMPORTAMIENTO ESPERADO:
+
+Turno 1 (primer mensaje del usuario):
+- Usuario: "Hola"
+- Asistente: "Hola. Softdatai ofrece migración a la nube, desarrollo de software, inteligencia artificial, análisis de datos y transformación digital." [FIN]
+
+Turno 2+ (mensajes siguientes):
+- Usuario: "¿En qué se especializan?"
+- Asistente: "Softdatai se especializa en cinco áreas: migración a la nube, desarrollo de software, inteligencia artificial, análisis de datos y transformación digital." [FIN, sin saludo, sin pregunta al final]
+
+- Usuario: "¿Cómo funciona la migración a la nube?"
+- Asistente: "La migración a la nube en Softdatai consiste en trasladar tu infraestructura, aplicaciones y datos desde servidores on-premise hacia plataformas como AWS, Azure o Google Cloud, usando un enfoque por fases (evaluación, planificación, migración, optimización) para minimizar interrupciones." [FIN]
+
+Si dudas entre saludar o no saludar, NO saludes. Es preferible omitir el saludo a repetirlo.
+
+7. RESPUESTAS COMPLETAS: Entrega SIEMPRE la respuesta completa en un solo turno. No te detengas a mitad de frase, no dejes frases incompletas, no cortés listados a la mitad. Si la información es extensa, estructúrala en viñetas o párrafos cortos, pero finalízala por completo. Si notas que la respuesta puede ser muy larga, prioriza la información esencial y entrégala toda de una vez.`;
 
 interface Message {
   id: string;
@@ -53,27 +68,62 @@ const FloatingMascot: React.FC = () => {
         const res = await fetch(API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents, systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] }, generationConfig: { temperature: 0.3, maxOutputTokens: 300 } }),
+          body: JSON.stringify({
+            contents,
+            systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+            generationConfig: {
+              temperature: 0.4,
+              maxOutputTokens: 2048,
+              topP: 0.95,
+              topK: 40,
+            },
+          }),
         });
-        
+
         if (res.ok) {
           const data = await res.json();
-          return data.candidates?.[0]?.content?.parts?.[0]?.text || 'No pude generar respuesta.';
+
+          // Detectar bloqueos por seguridad o respuestas vacías
+          const candidate = data.candidates?.[0];
+          if (!candidate) {
+            const blockReason = data.promptFeedback?.blockReason;
+            if (blockReason) {
+              return 'No puedo responder a esa solicitud por las politicas de seguridad. Reformula tu pregunta.';
+            }
+            return 'No pude generar respuesta. Intenta nuevamente.';
+          }
+
+          const finishReason = candidate.finishReason;
+          const text = candidate.content?.parts?.[0]?.text || '';
+
+          // Manejar razones de finalización especiales
+          if (finishReason === 'SAFETY') {
+            return 'La respuesta fue bloqueada por filtros de seguridad. Reformula tu pregunta.';
+          }
+          if (finishReason === 'RECITATION') {
+            return 'No puedo reproducir ese contenido. Reformula tu pregunta.';
+          }
+          if (finishReason === 'MAX_TOKENS') {
+            // Si se corto por tokens, devolver lo que haya y avisar
+            return text || 'La respuesta fue muy larga y se truncó. Intenta ser mas especifico.';
+          }
+
+          return text || 'No pude generar respuesta.';
         }
-        
+
         if (res.status === 503 || res.status === 429) {
           await new Promise(r => setTimeout(r, 1000 * (i + 1)));
           continue;
         }
-        
+
         if (res.status === 400) {
           return 'Solicitud incorrecta. Por favor intenta con otra pregunta.';
         }
-        
+
         if (res.status === 403) {
           return 'Acceso denegado. Contacta al administrador.';
         }
-        
+
         return 'Error del servidor (' + res.status + '). Intenta de nuevo.';
       } catch (err) {
         if (i === retries - 1) {
