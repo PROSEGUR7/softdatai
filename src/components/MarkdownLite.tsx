@@ -48,42 +48,10 @@ const URL_REGEX = /(?:https?:\/\/|www\.)[^\s<>()[\]{}'"]+[^\s<>()[\]{}'".:,;!?]/
 
 /**
  * Limpia un teléfono capturado: deja solo dígitos (sin +, espacios, guiones)
- * para construir el href de tel: o https://wa.me/
+ * para construir el href de https://wa.me/
  */
 function phoneToDigits(phone: string): string {
   return phone.replace(/\D/g, '');
-}
-
-/**
- * Intenta autocompletar el href para un fragmento capturado:
- *   - email ->  mailto:usuario@dominio
- *   - phone ->  https://wa.me/CC### (si parece móvil por longitud) o tel:###
- *   - url    ->  https://...
- */
-function buildAutolink(raw: string): { text: string; href: string; icon: 'phone' | 'mail' | 'globe' | 'whatsapp' } | null {
-  const trimmed = raw.replace(/[.,;:!?)]+$/g, '');
-  if (!trimmed) return null;
-
-  if (EMAIL_REGEX.test(trimmed) && /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(trimmed)) {
-    return { text: trimmed, href: 'mailto:' + trimmed, icon: 'mail' };
-  }
-
-  // Teléfono: si contiene + o dígitos suficientes, lo tratamos como tel
-  // Preferimos WhatsApp si el número parece móvil (10-15 dígitos) y no empieza con 0
-  if (/^\+?[\d\s\-().]+$/.test(trimmed)) {
-    const digits = phoneToDigits(trimmed);
-    if (digits.length >= 7 && digits.length <= 15) {
-      const href = `https://wa.me/${digits}`;
-      return { text: trimmed.trim(), href, icon: 'whatsapp' };
-    }
-  }
-
-  if (URL_REGEX.test(trimmed)) {
-    const href = trimmed.startsWith('http') ? trimmed : `https://${trimmed}`;
-    return { text: trimmed, href, icon: 'globe' };
-  }
-
-  return null;
 }
 
 /**
