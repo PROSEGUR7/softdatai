@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User, Loader2, X, Sparkles } from 'lucide-react';
 import Mascot from './Mascot';
 import MascotHead from './MascotHead';
+import MarkdownLite from './MarkdownLite';
 
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY as string;
 const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=' + API_KEY;
@@ -37,7 +38,12 @@ Turno 2+ (mensajes siguientes):
 
 Si dudas entre saludar o no saludar, NO saludes. Es preferible omitir el saludo a repetirlo.
 
-7. RESPUESTAS COMPLETAS: Entrega SIEMPRE la respuesta completa en un solo turno. No te detengas a mitad de frase, no dejes frases incompletas, no cortés listados a la mitad. Si la información es extensa, estructúrala en viñetas o párrafos cortos, pero finalízala por completo. Si notas que la respuesta puede ser muy larga, prioriza la información esencial y entrégala toda de una vez.`;
+7. RESPUESTAS COMPLETAS: Entrega SIEMPRE la respuesta completa en un solo turno. No te detengas a mitad de frase, no dejes frases incompletas, no cortés listados a la mitad. Si la información es extensa, estructúrala en viñetas o párrafos cortos, pero finalízala por completo. Si notas que la respuesta puede ser muy larga, prioriza la información esencial y entrégala toda de una vez.
+
+8. FORMATO MARKDOWN: Puedes usar Markdown ligero para mejorar la legibilidad: **negrita** para resaltar términos clave (títulos de sección, nombres propios, tecnologías) y *cursiva* para énfasis sutil. Listas con guión (-) o asterisco (*) en líneas separadas. Reglas estrictas de formato:
+   - NUNCA dejes asteriscos pegados a palabras sin cerrar (mal: "perfil**", "web:**", "Electronico:**"). Cada apertura ** debe tener su cierre ** sin caracteres en medio.
+   - NUNCA uses # encabezados, ni tablas, ni bloques de código.
+   - Para URLs usa formato [texto](https://url.com) completo en una sola pieza.`;
 
 interface Message {
   id: string;
@@ -176,7 +182,9 @@ const FloatingMascot: React.FC = () => {
                 <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                   <div className={`flex items-start gap-2 max-w-[85%] ${m.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
                     <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${m.role === 'user' ? 'bg-accent/20 text-accent' : 'bg-primary/20 text-primary'}`}>{m.role === 'user' ? <User size={14} /> : <Bot size={14} />}</div>
-                    <div className={`px-3 py-2 rounded-2xl text-sm whitespace-pre-wrap ${m.role === 'user' ? 'bg-accent/20 text-white rounded-tr-md' : 'bg-neutral-800/80 text-neutral-200 rounded-tl-md'}`}>{m.content}</div>
+                    <div className={`px-3 py-2 rounded-2xl text-sm ${m.role === 'user' ? 'bg-accent/20 text-white rounded-tr-md whitespace-pre-wrap' : 'bg-neutral-800/80 text-neutral-200 rounded-tl-md'}`}>
+                      {m.role === 'user' ? m.content : <MarkdownLite content={m.content} />}
+                    </div>
                   </div>
                 </div>
               ))}

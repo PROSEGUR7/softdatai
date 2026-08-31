@@ -97,7 +97,7 @@ const Navbar: React.FC = () => {
               rel="noopener noreferrer" 
               className="btn-primary text-sm lg:text-base px-4 lg:px-6 py-2 lg:py-3"
             >
-              Solicitar Asesoría
+              Asesoría
             </a>
             <a
               href="/brochure-corporativo-softdatai.pdf"
@@ -105,7 +105,7 @@ const Navbar: React.FC = () => {
               className="btn-secondary inline-flex items-center gap-2 text-sm lg:text-base px-4 lg:px-6 py-2 lg:py-3"
             >
               <Download size={16} />
-              Brochure Corporativo
+              Brochure
             </a>
           </motion.div>
 
@@ -178,7 +178,7 @@ const Navbar: React.FC = () => {
             className="btn-primary inline-block text-center mt-2"
             onClick={toggleMobileMenu}
           >
-            Solicitar Asesoría
+            Asesoría
           </a>
           <a
             href="/brochure-corporativo-softdatai.pdf"
@@ -187,7 +187,7 @@ const Navbar: React.FC = () => {
             onClick={toggleMobileMenu}
           >
             <Download size={16} />
-            Brochure Corporativo
+            Brochure
           </a>
         </div>
       </motion.div>
