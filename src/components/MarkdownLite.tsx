@@ -1,4 +1,5 @@
 import React from 'react';
+import { Mail, MessageCircle, Phone, Globe } from 'lucide-react';
 
 /**
  * Renderizador de Markdown ligero y seguro para mensajes de chat.
@@ -223,17 +224,20 @@ function renderTokens(tokens: Token[], keyPrefix = ''): React.ReactNode[] {
           </a>
         );
       case 'autolink': {
-        const iconChar = t.icon === 'mail' ? '✉' : t.icon === 'whatsapp' ? '💬' : t.icon === 'phone' ? '📞' : '🔗';
+        const IconComp =
+          t.icon === 'mail' ? Mail :
+          t.icon === 'whatsapp' ? MessageCircle :
+          t.icon === 'phone' ? Phone : Globe;
         return (
           <a
             key={key}
             href={t.href}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 px-1.5 py-0.5 my-0.5 rounded-md bg-primary/15 text-primary border border-primary/30 hover:bg-primary/25 hover:border-primary/50 transition-colors font-medium break-all"
+            className="inline-flex items-center gap-1.5 px-2 py-1 my-0.5 rounded-md bg-primary/15 text-primary border border-primary/30 hover:bg-primary/25 hover:border-primary/50 transition-colors font-medium break-all align-middle"
             title={t.href}
           >
-            <span aria-hidden="true" className="text-xs leading-none">{iconChar}</span>
+            <IconComp size={13} className="flex-shrink-0" aria-hidden="true" />
             <span className="underline underline-offset-2 decoration-primary/40">{t.text}</span>
           </a>
         );

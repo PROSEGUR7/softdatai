@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Loader2, X, Sparkles } from 'lucide-react';
+import { Send, Bot, User, X, Sparkles } from 'lucide-react';
 import Mascot from './Mascot';
 import MascotHead from './MascotHead';
 import MarkdownLite from './MarkdownLite';
@@ -1215,7 +1215,16 @@ const FloatingMascot: React.FC = () => {
                   </div>
                 </div>
               ))}
-              {isLoading && <div className="flex items-center gap-2 text-neutral-400 text-sm"><Loader2 size={14} className="animate-spin" /><span>Escribiendo...</span></div>}
+              {isLoading && (
+                <div className="flex items-center gap-2 px-3 py-2 rounded-2xl rounded-tl-md bg-neutral-800/80 text-neutral-400 text-sm w-fit">
+                  <span className="sr-only">Escribiendo</span>
+                  <span className="flex items-center gap-1" aria-hidden="true">
+                    <span className="w-1.5 h-1.5 rounded-full bg-neutral-400 animate-typing" style={{ animationDelay: '0ms' }}></span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-neutral-400 animate-typing" style={{ animationDelay: '180ms' }}></span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-neutral-400 animate-typing" style={{ animationDelay: '360ms' }}></span>
+                  </span>
+                </div>
+              )}
               <div ref={messagesEndRef} />
             </div>
             <div className="p-3 border-t border-neutral-700/50 bg-neutral-900/50">
