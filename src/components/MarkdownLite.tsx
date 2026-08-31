@@ -11,7 +11,8 @@ type Token =
   | { type: 'bold'; children: Token[] }
   | { type: 'italic'; children: Token[] }
   | { type: 'code'; value: string }
-  | { type: 'link'; text: string; href: string };
+  | { type: 'link'; text: string; href: string }
+  | { type: 'autolink'; text: string; href: string; icon?: 'phone' | 'mail' | 'globe' | 'whatsapp' };
 
 function isSafeUrl(url: string): boolean {
   const trimmed = url.trim();
@@ -31,6 +32,58 @@ function findClosingSingle(input: string, start: number, marker: string): number
     }
   }
   return -1;
+}
+
+// --- Auto-detección de enlaces (URLs, emails, teléfonos, WhatsApp) ---
+
+// Email estándar: usuario@dominio.tld
+const EMAIL_REGEX = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/;
+
+// Teléfono internacional con prefijo + opcional: +52 55 1234 5678, +1-202-555-0143, +57 320 655 0180
+// Acepta + al inicio, dígitos, espacios, guiones y paréntesis. Mínimo 7 dígitos totales.
+const PHONE_REGEX = /\+?\d[\d\s\-().]{6,}\d/;
+
+// URL cruda con o sin protocolo: https://ejemplo.com, www.ejemplo.com, dominio.com/path
+const URL_REGEX = /(?:https?:\/\/|www\.)[^\s<>()[\]{}'"]+[^\s<>()[\]{}'".:,;!?]/;
+
+/**
+ * Limpia un teléfono capturado: deja solo dígitos (sin +, espacios, guiones)
+ * para construir el href de tel: o https://wa.me/
+ */
+function phoneToDigits(phone: string): string {
+  return phone.replace(/\D/g, '');
+}
+
+/**
+ * Intenta autocompletar el href para un fragmento capturado:
+ *   - email ->  mailto:usuario@dominio
+ *   - phone ->  https://wa.me/CC### (si parece móvil por longitud) o tel:###
+ *   - url    ->  https://...
+ */
+function buildAutolink(raw: string): { text: string; href: string; icon: 'phone' | 'mail' | 'globe' | 'whatsapp' } | null {
+  const trimmed = raw.replace(/[.,;:!?)]+$/g, '');
+  if (!trimmed) return null;
+
+  if (EMAIL_REGEX.test(trimmed) && /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(trimmed)) {
+    return { text: trimmed, href: 'mailto:' + trimmed, icon: 'mail' };
+  }
+
+  // Teléfono: si contiene + o dígitos suficientes, lo tratamos como tel
+  // Preferimos WhatsApp si el número parece móvil (10-15 dígitos) y no empieza con 0
+  if (/^\+?[\d\s\-().]+$/.test(trimmed)) {
+    const digits = phoneToDigits(trimmed);
+    if (digits.length >= 7 && digits.length <= 15) {
+      const href = `https://wa.me/${digits}`;
+      return { text: trimmed.trim(), href, icon: 'whatsapp' };
+    }
+  }
+
+  if (URL_REGEX.test(trimmed)) {
+    const href = trimmed.startsWith('http') ? trimmed : `https://${trimmed}`;
+    return { text: trimmed, href, icon: 'globe' };
+  }
+
+  return null;
 }
 
 /**
@@ -107,6 +160,55 @@ function parseInline(input: string): Token[] {
       }
     }
 
+    // Detección de autolinks (email, telefono, url cruda)
+    // Solo busca cuando el cursor esta al inicio o después de un espacio/separador
+    // para no romper palabras como "softdatai.com" si apareciera pegado.
+    const isStartOrSep = i === 0 || /[\s(,;:!?¿¡]/.test(input[i - 1]);
+    if (isStartOrSep) {
+      // Probar email primero
+      const emailMatch = EMAIL_REGEX.exec(input.substring(i));
+      if (emailMatch && /^[\s(,;:!?¿¡]/.test(input[emailMatch[0].length + i] || ' ')) {
+        const m = emailMatch[0];
+        if (/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(m)) {
+          flush();
+          tokens.push({ type: 'autolink', text: m, href: 'mailto:' + m, icon: 'mail' });
+          i += m.length;
+          continue;
+        }
+      }
+
+      // Probar URL cruda
+      const urlMatch = URL_REGEX.exec(input.substring(i));
+      if (urlMatch) {
+        const m = urlMatch[0];
+        // Limitar a un solo "." final si lo hay
+        const trimmedUrl = m.replace(/[.,;:!?)]+$/, '');
+        flush();
+        const href = trimmedUrl.startsWith('http') ? trimmedUrl : `https://${trimmedUrl}`;
+        tokens.push({ type: 'autolink', text: trimmedUrl, href, icon: 'globe' });
+        i += trimmedUrl.length;
+        continue;
+      }
+
+      // Probar telefono (incluye numeros WhatsApp)
+      const phoneMatch = PHONE_REGEX.exec(input.substring(i));
+      if (phoneMatch) {
+        const m = phoneMatch[0].replace(/[\s\-().]+$/, '');
+        const digits = phoneToDigits(m);
+        if (digits.length >= 7 && digits.length <= 15) {
+          flush();
+          tokens.push({
+            type: 'autolink',
+            text: m.trim(),
+            href: `https://wa.me/${digits}`,
+            icon: 'whatsapp',
+          });
+          i += m.length;
+          continue;
+        }
+      }
+    }
+
     buffer += ch;
     i += 1;
   }
@@ -152,6 +254,22 @@ function renderTokens(tokens: Token[], keyPrefix = ''): React.ReactNode[] {
             {t.text}
           </a>
         );
+      case 'autolink': {
+        const iconChar = t.icon === 'mail' ? '✉' : t.icon === 'whatsapp' ? '💬' : t.icon === 'phone' ? '📞' : '🔗';
+        return (
+          <a
+            key={key}
+            href={t.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 px-1.5 py-0.5 my-0.5 rounded-md bg-primary/15 text-primary border border-primary/30 hover:bg-primary/25 hover:border-primary/50 transition-colors font-medium break-all"
+            title={t.href}
+          >
+            <span aria-hidden="true" className="text-xs leading-none">{iconChar}</span>
+            <span className="underline underline-offset-2 decoration-primary/40">{t.text}</span>
+          </a>
+        );
+      }
       default:
         return null;
     }
