@@ -1067,6 +1067,11 @@ IMPORTANTE:
 - Si el usuario te pide explicitamente un correo o telefono de contacto, entreguelo en formato plano (gerencia@softdatai.com, +57 315 354 7423) y NO en formato Markdown.
 - Una URL o un email SOLO se escribe UNA vez por respuesta. NUNCA repitas la misma URL o email en lineas separadas. Si ya lo entregaste en una lista, no lo vuelvas a mencionar.
 - Cuando entregues datos de contacto al final de una respuesta, hazlo en UNA sola linea limpia, no en multiples lineas con palabras sueltas cortadas.
+- NUNCA escribas una URL completa en una linea y luego repitas la misma URL pelada (sin https:// o solo el dominio) en otra linea. Esto genera texto duplicado visible en el chat. Solo UNA mencion por dato de contacto, completa.
+- Cuando entregues los datos de contacto, usa EXACTAMENTE este formato atomico de tres lineas, sin texto adicional antes o despues:
+  WhatsApp oficial: +57 315 354 7423
+  Sitio web: https://softdatai.com
+  Correo electronico: gerencia@softdatai.com
 
 Formato Markdown permitido (opcional y conservador):
 - **negrita** solo para resaltar terminos clave como nombres propios o tecnologias.
@@ -1232,8 +1237,9 @@ const FloatingMascot: React.FC = () => {
 
   /**
    * Red de seguridad del frontend: limpia la salida cruda del bot
-   * para eliminar asteriscos sueltos y enlaces duplicados
-   * que el modelo haya colado pese a las instrucciones.
+   * para eliminar asteriscos sueltos, enlaces duplicados y fragmentos
+   * de URL sueltos (ej: "tdatai.com", "wa.me/573153547423") que el
+   * modelo a veces escribe en líneas adicionales.
    */
   const sanitizeBotResponse = (raw: string): string => {
     let out = raw;
@@ -1254,7 +1260,24 @@ const FloatingMascot: React.FC = () => {
     // 3. Restaurar los pares validos
     out = out.replace(new RegExp(`${OPEN}([\\s\\S]*?)${CLOSE}`, 'g'), '**$1**');
 
-    // 4. Eliminar URLs/emails duplicados idénticos en líneas separadas
+    // 4. Limpiar líneas que son SOLO un fragmento de URL ya entregado
+    //    Patrones problematicos: "softdatai.com", "tdatai.com", "wa.me/xxxxx",
+    //    "www.softdatai.com", versiones peladas de URLs ya mencionadas.
+    out = out
+      .split('\n')
+      .map((line) => {
+        const trimmed = line.trim();
+        // Detecta lineas que consisten SOLO en un fragmento de URL
+        // ej: "softdatai.com", "www.softdatai.com", "wa.me/573153547423"
+        const FRAGMENT_REGEX = /^(?:www\.)?[a-z0-9-]+\.[a-z]{2,}(?:\.[a-z]{2,})?(?:\/[^\s]*)?$|^(?:wa\.me|api\.whatsapp\.com|t\.me|telegram\.me)\/\d+$/i;
+        if (FRAGMENT_REGEX.test(trimmed)) {
+          return ''; // Eliminar la linea completa
+        }
+        return line;
+      })
+      .join('\n');
+
+    // 5. Eliminar URLs/emails duplicados identicos en lineas separadas
     const seen = new Set<string>();
     out = out
       .split('\n')
@@ -1267,14 +1290,11 @@ const FloatingMascot: React.FC = () => {
         }
         return line;
       })
-      .filter((line, idx, arr) => {
-        // Quita líneas que quedaron vacías después del paso anterior
-        return !(line.trim() === '' && idx > 0 && arr[idx - 1].trim() === '');
-      })
       .join('\n');
 
-    // 5. Compactar múltiples saltos de línea en uno solo
-    out = out.replace(/\n{3,}/g, '\n\n').trim();
+    // 6. Compactar saltos de linea multiples y lineas vacias consecutivas
+    out = out.replace(/\n{3,}/g, '\n\n');
+    out = out.replace(/^\s*\n/gm, '').trim();
 
     return out;
   };
