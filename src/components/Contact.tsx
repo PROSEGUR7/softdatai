@@ -107,11 +107,13 @@ const Contact: React.FC = () => {
     {
       title: 'Teléfono',
       value: '+57 315 3547423',
+      href: 'tel:+573153547423',
       icon: <Phone size={20} />
     },
     {
       title: 'Email',
       value: 'gerencia@softdatai.com',
+      href: 'mailto:gerencia@softdatai.com',
       icon: <Mail size={20} />
     },
     {
@@ -168,7 +170,13 @@ const Contact: React.FC = () => {
                     </div>
                     <div>
                       <h4 className="text-white font-medium">{item.title}</h4>
-                      <p className="text-neutral-300">{item.value}</p>
+                      {item.href ? (
+                        <a href={item.href} className="text-neutral-300 hover:text-primary transition-colors">
+                          {item.value}
+                        </a>
+                      ) : (
+                        <p className="text-neutral-300">{item.value}</p>
+                      )}
                     </div>
                   </div>
                 ))}

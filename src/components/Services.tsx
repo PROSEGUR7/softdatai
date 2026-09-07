@@ -10,7 +10,6 @@ interface ServiceCardProps {
   title: string;
   description: string;
   tags: string[];
-  index: number;
   isActive: boolean;
   onClick: () => void;
   cardRef: (element: HTMLDivElement | null) => void;
@@ -21,7 +20,6 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
   title,
   description,
   tags,
-  index,
   isActive,
   onClick,
   cardRef,
@@ -29,10 +27,19 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
   return (
     <div
       ref={cardRef}
+      role="button"
+      tabIndex={0}
+      aria-pressed={isActive}
       className={`relative cursor-pointer transition-all duration-300 p-0.5 rounded-xl bg-gradient-to-br from-primary/30 via-primary/10 to-transparent h-full ${
         isActive ? 'scale-[1.02]' : 'hover:scale-[1.01]'
       }`}
       onClick={onClick}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onClick();
+        }
+      }}
       style={{ opacity: 0 }}
     >
       <div className="bg-background rounded-xl p-4 sm:p-5 h-full min-h-[220px]">
@@ -335,7 +342,6 @@ const Services: React.FC = () => {
               title={service.title}
               description={service.description}
               tags={service.tags}
-              index={index}
               isActive={activeService === index}
               onClick={() => setActiveService(index)}
               cardRef={(element) => {

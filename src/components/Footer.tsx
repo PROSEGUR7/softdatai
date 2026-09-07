@@ -14,7 +14,7 @@ const Footer: React.FC = () => {
               <Link to="/" className="flex items-center">
                 <img 
                   src="/images/LOGO SOFDATAI BLANCO WEB CURVA.png" 
-                  alt="SOFTDATAI Logo" 
+                  alt="Logo de Softdatai"
                   className="h-20" 
                 />
               </Link>
@@ -139,7 +139,8 @@ const Footer: React.FC = () => {
                   Inicio
                 </a>
               </li>
-              <li>\n                <a href="#servicios" className="text-neutral-400 hover:text-primary transition-colors">
+              <li>
+                <a href="#servicios" className="text-neutral-400 hover:text-primary transition-colors">
                   Servicios
                 </a>
               </li>

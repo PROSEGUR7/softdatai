@@ -8,7 +8,8 @@ export const useTypewriterTitle = (
   typingSpeed: number = 100,
   deletingSpeed: number = 60,
   pauseDuration: number = 1500,
-  baseTitle: string = 'SOFTDATAI - '
+  baseTitle: string = 'Softdatai | ',
+  enabled: boolean = true
 ) => {
   const [displayText, setDisplayText] = useState('');
   const [phraseIndex, setPhraseIndex] = useState(0);
@@ -18,6 +19,8 @@ export const useTypewriterTitle = (
   const currentPhrase = phrases[phraseIndex];
 
   useEffect(() => {
+    if (!enabled) return;
+
     let timeout: ReturnType<typeof setTimeout>;
 
     if (isTyping) {
@@ -48,7 +51,7 @@ export const useTypewriterTitle = (
     }
 
     return () => clearTimeout(timeout);
-  }, [charIndex, isTyping, currentPhrase, phraseIndex, phrases.length, typingSpeed, deletingSpeed, pauseDuration, baseTitle]);
+  }, [charIndex, isTyping, currentPhrase, phraseIndex, phrases.length, typingSpeed, deletingSpeed, pauseDuration, baseTitle, enabled]);
 
   return { displayText };
 };

@@ -12,9 +12,18 @@ interface SectorProps {
 const SectorItem: React.FC<SectorProps> = ({ icon, title, isActive, onClick }) => {
   return (
     <motion.div
+      role="button"
+      tabIndex={0}
+      aria-pressed={isActive}
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onClick();
+        }
+      }}
       className={`flex items-center gap-3 p-4 rounded-lg cursor-pointer transition-all duration-300 ${
         isActive 
           ? 'bg-primary/20 border border-primary/30 shadow-neon-primary' 
